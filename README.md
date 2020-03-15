@@ -6,239 +6,202 @@ Shell](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.
 
 ## Preparation
 
-1. Create a container based VM
+### 1. Config project
+
+```bash
+gcloud config set project <PROJECT_ID>
+```
+
+### 2. Create a container based VM
 
 ```bash
 gcloud compute instances create lab --zone=asia-east1-b --machine-type=g1-small --image-family=cos-stable --image-project=cos-cloud
 ```
 
-2. SSH login into `lab` VM
+### 3. SSH login into `lab` VM
 
 ```bash
 gcloud compute ssh --zone=asia-east1-b lab
 ```
 
-3. Pull latest docker image with Cloud SDK
+### 4. Back to Cloud Shell
+
+Exit from `lab` VM instance
 
 ```bash
-docker pull google/cloud-sdk:latest
+exit
 ```
 
 ## Cloud SDK (by user account)
 
-1. Run an environment with gcloud SDK
+### 1. SSH login into `lab` VM
 
-```
-docker run -v `pwd`:/lab -ti google/cloud-sdk:latest bash
+```bash
+gcloud compute ssh --zone=asia-east1-b lab
 ```
 
-2. Authentication and set project
+### 2. Run an environment with gcloud SDK
+
+```bash
+PWD=$(pwd)
+docker run -v $PWD:/lab -ti google/cloud-sdk:latest bash
+```
+
+### 3. Authentication and set project
  
 ```bash
 gcloud auth login
 ```
 
 ```bash
-gcloud config set project <YOUR_PROJECT_ID>
-
+gcloud config set project <PROJECT_ID>
 ```
 
 ```bash
 gcloud config list
 ```
 
-3. Create compute engine instance
+### 4. Create compute engine instance
 
 ```bash
 gcloud compute instances create vm-sdk-user --zone=asia-east1-b --machine-type=f1-micro
 ```
 
-## Let's get started!
+### 5. Back to Cloud Shell
 
-Get your users up and running quickly with your project by including an interactive tutorial.
+Exit from container in `lab` VM instance
 
-This guide will show you how to build your own interactive tutorial (like this one). It'll also walk you through generating a button that users can use to launch your finished tutorial.
-
-**Time to complete**: About 10 minutes
-
-Click the **Start** button to move to the next step.
-
-
-## What is Cloud Shell?
-
-Before we jump in, let's briefly go over what Cloud Shell can do.
-
-Cloud Shell is a personal hosted Virtual Machine which comes pre-loaded with developer tools for Google Cloud products. This interactive shell environment comes with a built-in code editor, persistent disk storage, and web preview functionality. To use command-line access alone, visit [console.cloud.google.com/cloudshell](https://console.cloud.google.com/cloudshell).
-
-You can direct your users to Cloud Shell to help them quickly get started with your project; giving them an opportunity to step through a use case and familiarize themselves with your project's functionality.
-
-Continue on to the next step to start setting up your tutorial.
-
-
-## In-context tutorials
-
-What you're looking at now is an in-context tutorial.
-
-The content is shown along with the Cloud Shell environment where you can carry out the tutorial steps. Having the tutorial and development environment open in the same place makes it easier for your users to start using your project through a straightforward single screen experience.
-
-Try running a command now:
 ```bash
-echo "Hello Cloud Shell"
+exit
 ```
 
-**Tip**: Click the copy button on the side of the code box and paste the command in the Cloud Shell terminal to run it.
+Exit from `lab` VM instance
 
-Next, you’ll write and launch a basic tutorial.
-
-
-## Opening the editor
-
-You can edit a file stored in Cloud Shell using Cloud Shell’s built-in text editor.
-
-*  To start, open the editor by clicking on the <walkthrough-cloud-shell-editor-icon></walkthrough-cloud-shell-editor-icon> icon.
-*  Look at the source file for this tutorial by opening `tutorial.md`.
-*  Try making a change to the file for this tutorial, then saving it using the <walkthrough-editor-spotlight spotlightId="fileMenu">file menu</walkthrough-editor-spotlight>.
-
-To restart the tutorial with your changes, run:
 ```bash
-cloudshell launch-tutorial -d tutorial.md
+exit
 ```
 
-Next, you will learn how to format the text in a tutorial.
+## Cloud SDK (by service account)
 
+### 1. Locate to IAM/Service Accounts
 
-## Writing in Markdown
+- Go to <walkthrough-spotlight-pointer cssSelector=".pcc-platform-bar-search-bar" text="search bar">
+</walkthrough-spotlight-pointer>, then input `Service Accounts`
+- Click `Service Accounts (IAM & Admin)`
 
-To write your tutorial, use [Markdown](https://en.wikipedia.org/wiki/Markdown) and follow these guidelines:
+### 2. Create service account
 
+- Go to <walkthrough-spotlight-pointer cssSelector="[aria-label='Create service account']"
+text="Create"> </walkthrough-spotlight-pointer>.
+- Input a meaningful name (e.g. vm-creator)
+- Bind roles: `Compute Instance Admin (v1)`
+- Download a generated JSON key
 
-### Edit the title
+### 3. Upload key onto `lab` VM instance
 
-Modify the title of this tutorial ('# Introduction to writing tutorials in Cloud Shell') by changing it to:
+Upload to Cloud Shell first by UI  
+e.g. SERVICE_ACCOUNT_KEY_PATH: `~/xxx.json`
 
-```
-# Teach me to write a tutorial
-```
-
-### Add a new step
-
-Next, add a step just after the title like this:
-
-```
-## Step 1
-This is a new step I’ve just added.
-```
-
-Each 'step' of a tutorial is displayed on one page. To move through steps, users use the 'Back' and 'Next' buttons.
-
-
-### Add underlying items to a step
-
-To list items that are part of a tutorial step under a particular step heading, add them as such:
-
-```
-### This is an item under your first step
-```
-
-The tutorial engine also supports Markdown features like links and images. Note, **including HTML is not supported**.
-
-To recap, a **title** is marked with a **level 1** heading, a **step** with a **level 2** heading, and an **item** with a **level 3** heading.
-
-
-### Restart to see changes
-
-To see your changes, restart the tutorial by running:
 ```bash
-cloudshell launch-tutorial -d tutorial.md
+gcloud compute scp <SERVICE_ACCOUNT_KEY_PATH> lab:~/ --zone=asia-east1-b
 ```
 
-Next up, adding helpful links and icons to your tutorial.
+### 4. SSH login into `lab` VM
 
-
-## Special tutorial features
-
-In the Markdown for your tutorial, you may include special directives that are specific to the tutorial engine. These allow you to include helpful shortcuts to actions that you may ask a user to perform.
-
-
-### Trigger file actions in the text editor
-To include a link to <walkthrough-editor-open-file filePath="cloud-shell-tutorials/tutorial.md">open a file for editing</walkthrough-editor-open-file>, use:
-
-```
-<walkthrough-editor-open-file
-    filePath="cloud-shell-tutorials/tutorial.md">
-    open a file for editing
-</walkthrough-editor-open-file>
+```bash
+gcloud compute ssh --zone=asia-east1-b lab
 ```
 
+### 5. Run an environment with gcloud SDK
 
-### Highlight a UI element
-
-You can also direct the user’s attention to an element on the screen that you want them to interact with.
-
-You may want to show people where to find the web preview icon to view the web server running in their Cloud Shell virtual machine in a new browser tab.
-
-Display the web preview icon <walkthrough-web-preview-icon></walkthrough-web-preview-icon> by including this in your tutorial’s Markdown:
-
-```
-<walkthrough-web-preview-icon>
-</walkthrough-web-preview-icon>
+```bash
+PWD=$(pwd)
+docker run -v $PWD:/lab -ti google/cloud-sdk:latest bash
 ```
 
-To create a link that shines a <walkthrough-spotlight-pointer spotlightId="devshell-web-preview-button">spotlight on the web preview icon</walkthrough-spotlight-pointer>, add the following:
+### 5. Athentication and set project
 
-```
-<walkthrough-spotlight-pointer
-    spotlightId="devshell-web-preview-button">
-    spotlight on the web preview icon
-</walkthrough-spotlight-pointer>
+```bash
+gcloud auth activate-service-account --key-file <SERVICE_ACCOUNT_KEY_PATH>
 ```
 
-You can find a list of supported spotlight targets in the [documentation for Cloud Shell Tutorials](https://cloud.google.com/shell/docs/tutorials).
-
-You've now built a tutorial to help onboard users!
-
-Next, you’ll create a button that allows users to launch your tutorial in Cloud Shell.
-
-
-## Creating a button for your site
-
-Here is how you can create a button for your website, blog, or open source project that will allow users to launch the tutorial you just created.
-
-
-### Creating an HTML Button
-
-To build a link for the 'Open in Cloud Shell' feature, start with this base HTML and replace the following:
-
-**`YOUR_REPO_URL_HERE`** with the project repository URL that you'd like cloned for your users in their launched Cloud Shell environment.
-
-**`TUTORIAL_FILE.md`** with your tutorial’s Markdown file. The path to the file is relative to the root directory of your project repository.
-
-```
-<a  href="https://console.cloud.google.com/cloudshell/open?git_repo=YOUR_REPO_URL_HERE&tutorial=TUTORIAL_FILE.md">
-    <img alt="Open in Cloud Shell" src="http://gstatic.com/cloudssh/images/open-btn.png">
-</a>
+```bash
+gcloud config set project <PROJECT_ID>
 ```
 
-Once you've edited the above HTML with the appropriate values for `git_repo` and `tutorial`, use the HTML snippet to generate the 'Open in Cloud Shell' button for your project.
+### 6. Create compute engine instance
 
-
-### Creating a Markdown Button
-
-If you are posting the 'Open in Cloud Shell' button in a location that accepts Markdown instead of HTML, use this example instead:
-
-```
-[![Open this project in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.google.com/cloudshell/open?git_repo=YOUR_REPO_URL_HERE&page=editor&tutorial=TUTORIAL_FILE.md)
+```bash
+gcloud compute instances create vm-sdk-sva --zone=asia-east1-b --machine-type=f1-micro
 ```
 
-Likewise, once you've replaced `YOUR_REPO_URL_HERE` and `TUTORIAL_FILE.md` in the 'Open in Cloud Shell' URL as described above, the resulting Markdown snippet can be used to create your button.
+Failed? How to fix it?
 
+```
+Ask a project owner to grant you the iam.serviceAccountUser role on the service account
+```
 
-## Congratulations
+### 7. Back to Cloud Shell
 
-<walkthrough-conclusion-trophy></walkthrough-conclusion-trophy>
+Exit from container in `lab` VM instance
 
-You’re all set!
+```bash
+exit
+```
 
-You can now have users launch your tutorial in Cloud Shell and have them start using your project with ease.
+Exit from `lab` VM instance
 
+```bash
+exit
+```
 
+## Cloud APIs (by user account)
+
+### 1. Upload template request body
+
+```bash
+gcloud compute scp ./resources/vm.json lab:~/ --zone=asia-east1-b
+```
+
+### 2. SSH login into `lab` VM
+
+```bash
+gcloud compute ssh --zone=asia-east1-b lab
+```
+
+### 3. Run an environment with gcloud SDK
+
+```bash
+PWD=$(pwd)
+docker run -v $PWD:/lab -ti google/cloud-sdk:latest bash
+```
+
+### 4. Authentication and set project
+ 
+```bash
+gcloud auth login
+```
+
+```bash
+gcloud config set project <PROJECT_ID>
+```
+
+### 5. Prepare API request body
+ 
+```bash
+export PROJECT_ID=<YOUR_PROJECT_ID>
+```
+
+```bash
+sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-user/" /lab/vm.json > /lab/tmp.json
+```
+
+### 6. Create compute engine instance
+
+```bash
+curl -X POST \
+ -H "Authorization: Bearer "$(gcloud auth print-access-token) \
+ -H "Content-Type: application/json; charset=utf-8" \
+ --data @/lab/tmp.json \
+ https://www.googleapis.com/compute/v1/projects/$PROJECT_ID/zones/asia-east1-b/instances
+```
