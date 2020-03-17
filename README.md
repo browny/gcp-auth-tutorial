@@ -43,8 +43,7 @@ gcloud compute ssh --zone=asia-east1-b lab
 ### 2. Run an environment with gcloud SDK
 
 ```bash
-PWD=$(pwd)
-docker run -v $PWD:/lab -ti google/cloud-sdk:latest bash
+docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
 ```
 
 ### 3. Authentication and set project
@@ -85,26 +84,29 @@ exit
 
 ### 1. Locate to IAM/Service Accounts
 
-- Go to <walkthrough-spotlight-pointer cssSelector=".pcc-platform-bar-search-bar" text="search bar">
-</walkthrough-spotlight-pointer>, then input `Service Accounts`
-- Click `Service Accounts (IAM & Admin)`
+- Go to IAM & Admin
+
+<walkthrough-menu-navigation sectionId="IAM_ADMIN_SECTION"></walkthrough-menu-navigation>
+
+- Go to <walkthrough-spotlight-pointer cssSelector="#cfctest-section-nav-item-serviceaccounts"
+  text="Service Accounts"> </walkthrough-spotlight-pointer>
 
 ### 2. Create service account
 
-- Go to <walkthrough-spotlight-pointer cssSelector="[aria-label='Create service account']"
+1. Go to <walkthrough-spotlight-pointer cssSelector="[aria-label='Create service account']"
 text="Create"> </walkthrough-spotlight-pointer>.
-- Input a meaningful name (e.g. vm-creator)
-- Bind roles: `Compute Instance Admin (v1)`
-- Download a generated JSON key
+1. Input a meaningful name (e.g. vm-creator) -> Click `CREATE`
+1. Bind roles: `Compute Instance Admin (v1)` -> Click `CONTINUE`
+1. Download a generated JSON key -> Click `+ CREATE KEY` -> Select `JSON` -> Click `CREATE`
 
 ### 3. Upload key onto `lab` VM instance
 
-Upload to Cloud Shell first by UI  
-e.g. SERVICE_ACCOUNT_KEY_PATH: `~/xxx.json`
+1. Upload to Cloud Shell first by UI  
+1. Copy key into `lab` VM instance
 
-```bash
-gcloud compute scp <SERVICE_ACCOUNT_KEY_PATH> lab:~/ --zone=asia-east1-b
-```
+  ```bash
+  gcloud compute scp <SERVICE_ACCOUNT_KEY_PATH> lab:~/ --zone=asia-east1-b
+  ```
 
 ### 4. SSH login into `lab` VM
 
@@ -115,8 +117,7 @@ gcloud compute ssh --zone=asia-east1-b lab
 ### 5. Run an environment with gcloud SDK
 
 ```bash
-PWD=$(pwd)
-docker run -v $PWD:/lab -ti google/cloud-sdk:latest bash
+docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
 ```
 
 ### 5. Athentication and set project
@@ -138,7 +139,7 @@ gcloud compute instances create vm-sdk-sva --zone=asia-east1-b --machine-type=f1
 Failed? How to fix it?
 
 ```
-Ask a project owner to grant you the iam.serviceAccountUser role on the service account
+Grant the service account the `iam.serviceAccountUser` role on `default compute engine service account`
 ```
 
 ### 7. Back to Cloud Shell
@@ -172,8 +173,7 @@ gcloud compute ssh --zone=asia-east1-b lab
 ### 3. Run an environment with gcloud SDK
 
 ```bash
-PWD=$(pwd)
-docker run -v $PWD:/lab -ti google/cloud-sdk:latest bash
+docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
 ```
 
 ### 4. Authentication and set project
@@ -205,3 +205,73 @@ curl -X POST \
  --data @/lab/tmp.json \
  https://www.googleapis.com/compute/v1/projects/$PROJECT_ID/zones/asia-east1-b/instances
 ```
+
+### 7. Back to Cloud Shell
+
+Exit from container in `lab` VM instance
+
+```bash
+exit
+```
+
+Exit from `lab` VM instance
+
+```bash
+exit
+```
+
+## Cloud APIs (by service account)
+
+### 1. SSH login into `lab` VM
+
+```bash
+gcloud compute ssh --zone=asia-east1-b lab
+```
+
+### 2. Run an environment with gcloud SDK
+
+```bash
+docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
+```
+
+### 3. Athentication and set project
+
+```bash
+gcloud auth activate-service-account --key-file <SERVICE_ACCOUNT_KEY_PATH>
+```
+
+### 4. Prepare API request body
+ 
+```bash
+export PROJECT_ID=<YOUR_PROJECT_ID>
+```
+
+```bash
+sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-user/" /lab/vm.json > /lab/tmp.json
+```
+
+### 5. Create compute engine instance
+
+```bash
+curl -X POST \
+ -H "Authorization: Bearer "$(gcloud auth print-access-token) \
+ -H "Content-Type: application/json; charset=utf-8" \
+ --data @/lab/tmp.json \
+ https://www.googleapis.com/compute/v1/projects/$PROJECT_ID/zones/asia-east1-b/instances
+```
+
+### 6. Back to Cloud Shell
+
+Exit from container in `lab` VM instance
+
+```bash
+exit
+```
+
+Exit from `lab` VM instance
+
+```bash
+exit
+```
+
+
