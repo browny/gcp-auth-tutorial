@@ -11,41 +11,28 @@ Shell](https://gstatic.com/cloudssh/images/open-btn.png)](https://console.cloud.
 gcloud config set project <PROJECT_ID>
 ```
 
-### 2. Create a container based VM
+### 2. Create an instance without service account
 
 ```bash
-gcloud compute instances create lab --zone=asia-east1-b --machine-type=g1-small --image-family=cos-stable --image-project=cos-cloud
+gcloud compute instances create lab --zone=asia-east1-b --machine-type=f1-micro --no-service-account --no-scopes --image-family=debian-9 --image-project=debian-cloud
 ```
 
-### 3. SSH login into `lab` VM
+### 3. Copy sample files to `lab` instance
+
+```
+gcloud compute scp --recurse ./resources/* lab:~/ --zone=asia-east1-b
+```
+
+### 4. SSH login into `lab` VM
 
 ```bash
 gcloud compute ssh --zone=asia-east1-b lab
 ```
 
-### 4. Back to Cloud Shell
-
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## Cloud SDK (by user account)
 
-### 1. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 2. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 3. Authentication and set project
+### 1. Authentication and set project
  
 ```bash
 gcloud auth login
@@ -59,25 +46,18 @@ gcloud config set project <PROJECT_ID>
 gcloud config list
 ```
 
-### 4. Create compute engine instance
+### 2. Create compute engine instance
 
 ```bash
 gcloud compute instances create vm-sdk-user --zone=asia-east1-b --machine-type=f1-micro
 ```
 
-### 5. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 3. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## Cloud SDK (by service account)
 
@@ -100,26 +80,7 @@ text="Create"> </walkthrough-spotlight-pointer>
 
 ### 3. Upload key onto `lab` VM instance
 
-1. Upload to Cloud Shell first by UI  
-1. Copy key into `lab` VM instance
-
-  ```bash
-  gcloud compute scp <SERVICE_ACCOUNT_KEY_PATH> lab:~/ --zone=asia-east1-b
-  ```
-
-### 4. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 5. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 5. Athentication and set project
+### 4. Authentication and set project
 
 ```bash
 gcloud auth activate-service-account --key-file <SERVICE_ACCOUNT_KEY_PATH>
@@ -129,7 +90,7 @@ gcloud auth activate-service-account --key-file <SERVICE_ACCOUNT_KEY_PATH>
 gcloud config set project <PROJECT_ID>
 ```
 
-### 6. Create compute engine instance
+### 5. Create compute engine instance
 
 ```bash
 gcloud compute instances create vm-sdk-sva --zone=asia-east1-b --machine-type=f1-micro
@@ -141,41 +102,16 @@ Failed? How to fix it?
 Grant the service account the `iam.serviceAccountUser` role on `default compute engine service account`
 ```
 
-### 7. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 6. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## Cloud APIs (by user account)
 
-### 1. Upload template request body
-
-```bash
-gcloud compute scp ./resources/vm.json lab:~/ --zone=asia-east1-b
-```
-
-### 2. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 3. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 4. Authentication and set project
+### 1. Authentication and set project
  
 ```bash
 gcloud auth login
@@ -185,109 +121,71 @@ gcloud auth login
 gcloud config set project <PROJECT_ID>
 ```
 
-### 5. Prepare API request body
+### 2. Prepare API request body
  
 ```bash
 export PROJECT_ID=<YOUR_PROJECT_ID>
 ```
 
 ```bash
-sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-user/" /lab/vm.json > /lab/tmp.json
+sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-user/" vm.json > tmp.json
 ```
 
-### 6. Create compute engine instance
+### 3. Create compute engine instance
 
 ```bash
 curl -X POST \
  -H "Authorization: Bearer "$(gcloud auth print-access-token) \
  -H "Content-Type: application/json; charset=utf-8" \
- --data @/lab/tmp.json \
+ --data @tmp.json \
  https://www.googleapis.com/compute/v1/projects/$PROJECT_ID/zones/asia-east1-b/instances
 ```
 
-### 7. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 4. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## Cloud APIs (by service account)
 
-### 1. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 2. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 3. Athentication and set project
+### 1. Authentication and set project
 
 ```bash
 gcloud auth activate-service-account --key-file <SERVICE_ACCOUNT_KEY_PATH>
 ```
 
-### 4. Prepare API request body
+### 2. Prepare API request body
  
 ```bash
 export PROJECT_ID=<YOUR_PROJECT_ID>
 ```
 
 ```bash
-sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-sva/" /lab/vm.json > /lab/tmp.json
+sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-sva/" vm.json > tmp.json
 ```
 
-### 5. Create compute engine instance
+### 3. Create compute engine instance
 
 ```bash
 curl -X POST \
  -H "Authorization: Bearer "$(gcloud auth print-access-token) \
  -H "Content-Type: application/json; charset=utf-8" \
- --data @/lab/tmp.json \
+ --data @tmp.json \
  https://www.googleapis.com/compute/v1/projects/$PROJECT_ID/zones/asia-east1-b/instances
 ```
 
-### 6. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 4. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## Cloud APIs (by user account ADC)
 
-### 1. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 2. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 3. Athentication and set project
+### 1. Authentication and set project
 
 ```bash
 unset GOOGLE_APPLICATION_CREDENTIALS
@@ -297,147 +195,96 @@ unset GOOGLE_APPLICATION_CREDENTIALS
 gcloud auth application-default login
 ```
 
-### 4. Prepare API request body
+### 2. Prepare API request body
  
 ```bash
 export PROJECT_ID=<YOUR_PROJECT_ID>
 ```
 
 ```bash
-sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-user-adc/" /lab/vm.json > /lab/tmp.json
+sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-user-adc/" vm.json > tmp.json
 ```
 
-### 5. Create compute engine instance
+### 3. Create compute engine instance
 
 ```bash
 curl -X POST \
  -H "Authorization: Bearer "$(gcloud auth application-default print-access-token) \
  -H "Content-Type: application/json; charset=utf-8" \
- --data @/lab/tmp.json \
+ --data @tmp.json \
  https://www.googleapis.com/compute/v1/projects/$PROJECT_ID/zones/asia-east1-b/instances
 ```
 
-### 6. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 4. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## Cloud APIs (by service account ADC)
 
-### 1. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 2. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 3. Athentication and set project
+### 1. Authentication and set project
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=<SERVICE_ACCOUNT_KEY_PATH>
 ```
 
-### 4. Prepare API request body
+### 2. Prepare API request body
  
 ```bash
 export PROJECT_ID=<YOUR_PROJECT_ID>
 ```
 
 ```bash
-sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-sva-adc/" /lab/vm.json > /lab/tmp.json
+sed "s/PROJECT_ID/$PROJECT_ID/; s/NAME/vm-api-sva-adc/" vm.json > tmp.json
 ```
 
-### 5. Create compute engine instance
+### 3. Create compute engine instance
 
 ```bash
 curl -X POST \
  -H "Authorization: Bearer "$(gcloud auth application-default print-access-token) \
  -H "Content-Type: application/json; charset=utf-8" \
- --data @/lab/tmp.json \
+ --data @tmp.json \
  https://www.googleapis.com/compute/v1/projects/$PROJECT_ID/zones/asia-east1-b/instances
 ```
 
-### 6. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 4. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## ML APIs (by user account, NOT supported)
 
-### 1. Upload template request body
-
-```bash
-gcloud compute scp ./resources/request.json lab:~/ --zone=asia-east1-b
-```
-
-### 2. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 3. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 4. Athentication and set project
+### 1. Authentication and set project
 
 ```bash
 gcloud auth login
 ```
 
-### 5. Make vision API call
+### 2. Make vision API call
  
 ```bash
 curl -X POST \
  -H "Authorization: Bearer "$(gcloud auth print-access-token) \
  -H "Content-Type: application/json; charset=utf-8" \
- --data @/lab/request.json \
+ --data @request.json \
  https://vision.googleapis.com/v1/images:annotate
 ```
 
-### 6. Failed? Why?
+### 3. Failed? Why?
 
 gcloud auth login act as an oauth client, its project is NOT the project which enabled Vision API
 
-### 7. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 4. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## ML APIs (by API key)
 
@@ -453,19 +300,7 @@ exit
 - Click <walkthrough-spotlight-pointer cssSelector="[aria-label='Create credential']"
 text="CREATE CREDENTIALS"> </walkthrough-spotlight-pointer>
 
-### 2. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 3. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 4. Make vision API call
+### 2. Make vision API call
 
 ```bash
 export API_KEY=<CREATED_API_KEY>
@@ -474,109 +309,63 @@ export API_KEY=<CREATED_API_KEY>
 ```bash
 curl -X POST \
  -H "Content-Type: application/json; charset=utf-8" \
- -d @/lab/request.json \
+ -d @request.json \
  https://vision.googleapis.com/v1/images:annotate?key=$API_KEY
 ```
 
-### 5. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 3. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## ML APIs (by service account)
 
-### 1. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 2. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 3. Athentication and set project
+### 1. Authentication and set project
 
 ```bash
 gcloud auth activate-service-account --key-file <SERVICE_ACCOUNT_KEY_PATH>
 ```
 
-### 4. Make vision API call
+### 2. Make vision API call
  
 ```bash
 curl -X POST \
  -H "Authorization: Bearer "$(gcloud auth print-access-token) \
  -H "Content-Type: application/json; charset=utf-8" \
- --data @/lab/request.json \
+ --data @request.json \
  https://vision.googleapis.com/v1/images:annotate
 ```
 
-### 5. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 3. Revoke auth
 
 ```bash
-exit
+gcloud auth revoke --all
 ```
 
-Exit from `lab` VM instance
-
-```bash
-exit
-```
 
 ## ML APIs (by service account ADC)
 
-### 1. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
-
-### 2. Run an environment with gcloud SDK
-
-```bash
-docker run -v $(pwd):/lab -ti google/cloud-sdk:latest bash
-```
-
-### 3. Athentication and set project
+### 1. Authentication and set project
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=<SERVICE_ACCOUNT_KEY_PATH>
 ```
 
-### 4. Make vision API call
+### 2. Make vision API call
  
 ```bash
 curl -X POST \
  -H "Authorization: Bearer "$(gcloud auth application-default print-access-token) \
  -H "Content-Type: application/json; charset=utf-8" \
- --data @/lab/request.json \
+ --data @request.json \
  https://vision.googleapis.com/v1/images:annotate
 ```
 
-### 5. Back to Cloud Shell
-
-Exit from container in `lab` VM instance
+### 3. Revoke auth
 
 ```bash
-exit
-```
-
-Exit from `lab` VM instance
-
-```bash
-exit
+gcloud auth revoke --all
 ```
 
