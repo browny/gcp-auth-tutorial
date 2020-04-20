@@ -19,15 +19,11 @@ gcloud compute instances create lab --zone=asia-east1-b --machine-type=f1-micro 
 
 ### 3. Copy sample files to `lab` instance
 
-```
+```bash
 gcloud compute scp --recurse ./resources/* lab:~/ --zone=asia-east1-b
 ```
 
-### 4. SSH login into `lab` VM
-
-```bash
-gcloud compute ssh --zone=asia-east1-b lab
-```
+### 4. Login `lab` instance with `SSH` button
 
 
 ## Cloud SDK (by user account)
@@ -78,7 +74,7 @@ text="Create"> </walkthrough-spotlight-pointer>
 1. Bind roles: `Compute Instance Admin (v1)` -> Click `CONTINUE`
 1. Download a generated JSON key -> Click `+ CREATE KEY` -> Select `JSON` -> Click `CREATE`
 
-### 3. Upload key onto `lab` VM instance
+### 3. Upload key onto `lab` instance
 
 ### 4. Authentication and set project
 
