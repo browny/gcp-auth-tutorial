@@ -214,7 +214,7 @@ curl -X POST \
 ### 4. Revoke auth
 
 ```bash
-gcloud auth revoke --all
+gcloud auth application-default revoke
 ```
 
 
@@ -249,7 +249,7 @@ curl -X POST \
 ### 4. Revoke auth
 
 ```bash
-gcloud auth revoke --all
+gcloud auth application-default revoke
 ```
 
 
@@ -309,12 +309,6 @@ curl -X POST \
  https://vision.googleapis.com/v1/images:annotate?key=$API_KEY
 ```
 
-### 3. Revoke auth
-
-```bash
-gcloud auth revoke --all
-```
-
 
 ## ML APIs (by service account)
 
@@ -362,6 +356,6 @@ curl -X POST \
 ### 3. Revoke auth
 
 ```bash
-gcloud auth revoke --all
+gcloud auth application-default revoke
 ```
 
